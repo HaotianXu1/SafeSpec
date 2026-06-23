@@ -9,7 +9,7 @@
 [![Conference](https://img.shields.io/badge/ICML-2026-8A2BE2.svg)](https://icml.cc/)
 [![arXiv](https://img.shields.io/badge/arXiv-2606.19755-b31b1b.svg)](https://arxiv.org/abs/2606.19755)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![HuggingFace](https://img.shields.io/badge/🤗%20HuggingFace-Safety%20Heads-yellow.svg)](https://huggingface.co/HaotianXu1/safespec-safety-heads)
+[![HuggingFace](https://img.shields.io/badge/🤗%20Safety%20Heads-Coming%20Soon-lightgrey.svg)]()
 
 </div>
 
@@ -80,9 +80,7 @@ The full pipeline lives in `safety_head/`: generate draft rollouts (`generate.py
 
 ## 🤗 Pretrained Safety Heads
 
-Weights are on the Hugging Face Hub (GitHub is not for large binaries):
-
-> **[`HaotianXu1/safespec-safety-heads`](https://huggingface.co/HaotianXu1/safespec-safety-heads)** *(update with your actual HF repo)*
+> 🚧 **Coming soon** — pretrained safety head weights will be released on the Hugging Face Hub.
 
 | Head | Target model | hidden dim | size |
 |------|-------------|-----------|------|
