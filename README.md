@@ -60,19 +60,22 @@ pip install -r requirements.txt
 
 ### Quick start
 
+Evaluate **jailbreak attack success rate (ASR)** under the SafeSpec defense. `run_jailbreak.sh` is self-contained — it launches the base + draft vLLM servers, loads the safety head, runs the chosen attacks against `jailbreak_prompts/`, and writes per-prompt `verdict` (safe / jailbreak).
+
 ```bash
-# 1) launch vLLM servers (base + draft + safety-head pooling instance)
-bash specreason/run_deepseek_servers.sh
-bash specreason/run_safety_pool.sh
+# spec_ppl = SafeSpec defense (safety head + recovery); also: speculative / target_only
+METHODS="ABJ CodeChameleon" RUN_MODE=spec_ppl bash safespec/run_jailbreak.sh
 
-# 2) run reasoning — pick a mode via --run_mode {target_only|speculative|spec_ppl}
-python specreason/spec_reason_ppl.py --help
-
-# 3) (optional) reproduce benchmarks
-bash specreason/run_math_gsm8k_official.sh
+# smoke test (limit prompts per method)
+bash safespec/run_jailbreak.sh --max_prompts_per_method 10
 ```
 
-> ⚙️ The launch scripts contain machine-specific paths (model dirs, GPU ids) — edit them for your environment. The framework talks to vLLM via an OpenAI-compatible client (`api_key="EMPTY"`, localhost); no external API key required.
+> ⚙️ Edit the model / GPU paths at the top of `run_jailbreak.sh` for your environment. The framework talks to the local vLLM servers via an OpenAI-compatible client (`api_key="EMPTY"`). The **judge** model that scores ASR uses an external OpenAI-compatible API — set credentials via env vars (never hardcode):
+>
+> ```bash
+> export JUDGE_API_KEY="your-key"
+> export JUDGE_API_BASE="https://api.openai.com/v1"   # or your provider
+> ```
 
 ### Training a safety head
 
@@ -93,10 +96,11 @@ Each is a small MLP over the target model's last-layer mean-pooled hidden states
 
 ```
 SafeSpec/
-├── specreason/                       # speculative reasoning framework
+├── safespec/                         # speculative reasoning framework + jailbreak ASR eval
 │   ├── spec_reason.py                #   target_only / speculative modes
 │   ├── spec_reason_ppl.py            #   spec_ppl mode (safety head + recovery)
-│   └── run_*.sh                      #   vLLM server / benchmark launch scripts
+│   ├── run_jailbreak.sh              #   self-contained jailbreak ASR evaluation
+│   └── run_jailbreak_pipeline.py     #   evaluation pipeline (judge-scored verdicts)
 ├── safety_head/                      # safety head training pipeline
 │   ├── generate.py · label.py · extract_features.py · train_head_cached.py
 │   ├── safety_head.py                #   safety head model + pooling
