@@ -4,6 +4,9 @@
 
 ### **Unlocking Secure Inference Acceleration via Dynamic Reflective Sampling**
 
+### 🎉 Accepted to ICML 2026 🎉
+
+[![Conference](https://img.shields.io/badge/ICML-2026-8A2BE2.svg)](https://icml.cc/)
 [![arXiv](https://img.shields.io/badge/arXiv-2606.19755-b31b1b.svg)](https://arxiv.org/abs/2606.19755)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![HuggingFace](https://img.shields.io/badge/🤗%20HuggingFace-Safety%20Heads-yellow.svg)](https://huggingface.co/HaotianXu1/safespec-safety-heads)
