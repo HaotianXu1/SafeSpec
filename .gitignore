@@ -32,6 +32,10 @@ GSM8K/
 xstest-main/
 *.csv
 
+# ===== exception: keep the paper's jailbreak eval prompts (overrides *.jsonl) =====
+!jailbreak_prompts/
+!jailbreak_prompts/*.jsonl
+
 # ===== Python / 缓存 / 密钥 =====
 __pycache__/
 *.pyc

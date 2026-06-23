@@ -97,10 +97,12 @@ SafeSpec/
 │   ├── spec_reason.py                #   target_only / speculative modes
 │   ├── spec_reason_ppl.py            #   spec_ppl mode (safety head + recovery)
 │   └── run_*.sh                      #   vLLM server / benchmark launch scripts
-└── safety_head/                      # safety head training pipeline
-    ├── generate.py · label.py · extract_features.py · train_head_cached.py
-    ├── safety_head.py                #   safety head model + pooling
-    └── build_mix_*.py · *.sh
+├── safety_head/                      # safety head training pipeline
+│   ├── generate.py · label.py · extract_features.py · train_head_cached.py
+│   ├── safety_head.py                #   safety head model + pooling
+│   └── build_mix_*.py · *.sh
+└── jailbreak_prompts/                # the 7 jailbreak attacks used for evaluation
+                                      #   (attack prompts only — no model outputs)
 ```
 
 ## 📝 Citation
