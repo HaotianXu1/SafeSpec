@@ -38,13 +38,13 @@ At each step the draft model proposes a candidate segment; the target model then
 - **General Mode** — accept / regenerate the segment by quality, as in standard speculative reasoning.
 - **Safety Mode** — when the safety head flags risk, **roll back**, insert a reflection prompt, and **reflectively multi-sample** a safe continuation.
 
-Three run modes are provided (`spec_reason.py` / `spec_reason_ppl.py`):
+Three run modes are provided (`spec_reason.py` / `spec_reason_safe.py`):
 
 | Mode | Description |
 |------|-------------|
 | `target_only` | target model alone (accuracy ceiling) |
 | `speculative` | draft proposes, target scores/accepts |
-| `spec_ppl` | speculative **+ safety head + rollback/recovery** — the SafeSpec defense |
+| `spec_safe` | speculative **+ safety head + rollback/recovery** — the SafeSpec defense |
 
 Supported model pairs: **Qwen3-32B / Qwen3-1.7B** and **DeepSeek-R1-Distill-Llama-70B / -8B**.
 
@@ -63,8 +63,8 @@ pip install -r requirements.txt
 Evaluate **jailbreak attack success rate (ASR)** under the SafeSpec defense. `run_jailbreak.sh` is self-contained — it launches the base + draft vLLM servers, loads the safety head, runs the chosen attacks against `jailbreak_prompts/`, and writes per-prompt `verdict` (safe / jailbreak).
 
 ```bash
-# spec_ppl = SafeSpec defense (safety head + recovery); also: speculative / target_only
-METHODS="ABJ CodeChameleon" RUN_MODE=spec_ppl bash safespec/run_jailbreak.sh
+# spec_safe = SafeSpec defense (safety head + recovery); also: speculative / target_only
+METHODS="ABJ CodeChameleon" RUN_MODE=spec_safe bash safespec/run_jailbreak.sh
 
 # smoke test (limit prompts per method)
 bash safespec/run_jailbreak.sh --max_prompts_per_method 10
@@ -98,7 +98,7 @@ Each is a small MLP over the target model's last-layer mean-pooled hidden states
 SafeSpec/
 ├── safespec/                         # speculative reasoning framework + jailbreak ASR eval
 │   ├── spec_reason.py                #   target_only / speculative modes
-│   ├── spec_reason_ppl.py            #   spec_ppl mode (safety head + recovery)
+│   ├── spec_reason_safe.py            #   spec_safe mode (safety head + recovery)
 │   ├── run_jailbreak.sh              #   self-contained jailbreak ASR evaluation
 │   └── run_jailbreak_pipeline.py     #   evaluation pipeline (judge-scored verdicts)
 ├── safety_head/                      # safety head training pipeline

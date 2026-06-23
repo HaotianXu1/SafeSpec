@@ -60,7 +60,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--prompt_dir",
         type=str,
-        default="/data/xuhaotian/jailbreak_prompt",
+        default="/path/to/jailbreak_prompts",
         help="Directory containing jailbreak method jsonl files.",
     )
     parser.add_argument(
@@ -81,19 +81,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--target_model_path",
         type=str,
-        default="/data/LLM_models/Qwen3-4B",
+        default="Qwen/Qwen3-4B",
         help="Generator model path.",
     )
     parser.add_argument(
         "--guard_model_path",
         type=str,
-        default="/data/xuhaotian/model/Qwen3Guard-Gen-8B",
+        default="/path/to/models/Qwen3Guard-Gen-8B",
         help="QwenGuard model path for safety labeling.",
     )
     parser.add_argument(
         "--output_root",
         type=str,
-        default="/data/xuhaotian/Safety_head/ood_data",
+        default="/path/to/safety_head_ckpts/ood_data",
         help="Root output directory for OOD data.",
     )
     parser.add_argument(

@@ -5,9 +5,9 @@
 
 用法示例：
   python eval_safety_head_curves.py \\
-    --model_path /data/xuhaotian/model/Qwen3-32B \\
+    --model_path Qwen/Qwen3-32B \\
     --head_path safety_head_ckpt_qwen32b_layer32/safety_head.pt \\
-    --data_dir /data/xuhaotian/Safety_head/train_data_qwen_4b \\
+    --data_dir /path/to/safety_head_ckpts/train_data_qwen_4b \\
     --out_dir eval_out_layer32 \\
     --device_map auto --gpu 0,1
 """

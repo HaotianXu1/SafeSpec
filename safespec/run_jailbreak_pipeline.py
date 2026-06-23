@@ -9,10 +9,10 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
 
-DEFAULT_QWEN_SAFETY_MODEL = "/data/xuhaotian/model/Qwen3-32B"
-DEFAULT_QWEN_SAFETY_HEAD = "/data/xuhaotian/Safety_head/safety_head_ckpt_qwen32b_layerlast_mix_aug2/safety_head_best.pt"
-DEFAULT_DEEPSEEK_SAFETY_MODEL = "/data/LLM_models/DeepSeek-R1-Distill-Llama-70B"
-DEFAULT_DEEPSEEK_SAFETY_HEAD = "/data/xuhaotian/Safety_head/safety_head_ckpt_llama_8B—epochs-2/safety_head.pt"
+DEFAULT_QWEN_SAFETY_MODEL = "Qwen/Qwen3-32B"
+DEFAULT_QWEN_SAFETY_HEAD = "/path/to/safety_head_ckpts/safety_head_ckpt_qwen32b_layerlast_mix_aug2/safety_head_best.pt"
+DEFAULT_DEEPSEEK_SAFETY_MODEL = "deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
+DEFAULT_DEEPSEEK_SAFETY_HEAD = "/path/to/safety_head_ckpts/safety_head_ckpt_llama_8B—epochs-2/safety_head.pt"
 
 def _early_env_setup() -> None:
     """
@@ -48,7 +48,7 @@ _early_env_setup()
 
 import torch
 import spec_reason
-import spec_reason_ppl
+import spec_reason_safe
 try:
     from safe_decoding import SafeDecodingWrapper  # optional baseline; requires the upstream SafeDecoding repo
 except ImportError:
@@ -141,24 +141,24 @@ def build_pipeline_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--run_mode",
         type=str,
-        choices=["speculative", "spec_ppl", "draft_only", "target_only", "transformers_only", "psr", "safedecoding", "secdecoding", "specr"],
+        choices=["speculative", "spec_safe", "draft_only", "target_only", "transformers_only", "psr", "safedecoding", "secdecoding", "specr"],
         default="speculative",
-        help="Execution mode: speculative/spec_ppl/draft_only/target_only/transformers_only/psr/safedecoding/secdecoding/specr.",
+        help="Execution mode: speculative/spec_safe/draft_only/target_only/transformers_only/psr/safedecoding/secdecoding/specr.",
     )
-    # Max steps (pass through to spec_ppl)
+    # Max steps (pass through to spec_safe)
     parser.add_argument(
         "--max_steps",
         type=int,
         default=64,
-        help="Hard cap on reasoning steps (for spec_ppl/speculative).",
+        help="Hard cap on reasoning steps (for spec_safe/speculative).",
     )
     parser.add_argument(
         "--max_rollback_per_step",
         type=int,
         default=3,
-        help="Max number of rollbacks allowed per step_id in spec_ppl mode",
+        help="Max number of rollbacks allowed per step_id in spec_safe mode",
     )
-    # Safety head args (for spec_ppl)
+    # Safety head args (for spec_safe)
     parser.add_argument(
         "--safety_head_path",
         type=str,
@@ -168,7 +168,7 @@ def build_pipeline_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--safety_model_path",
         type=str,
-        # default="/data/LLM_models/DeepSeek-R1-Distill-Llama-70B",
+        # default="deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
         default=DEFAULT_QWEN_SAFETY_MODEL,
         help="Backbone model path for safety head",
     )
@@ -206,7 +206,7 @@ def build_pipeline_parser() -> argparse.ArgumentParser:
         "--safety_hidden_layer",
         type=int,
         default=None,
-        help="hidden_states 层下标（None=用 checkpoint 内保存；与 spec_reason_ppl 一致）。",
+        help="hidden_states 层下标（None=用 checkpoint 内保存；与 spec_reason_safe 一致）。",
     )
     parser.add_argument(
         "--safety_backend",
@@ -512,7 +512,7 @@ def _init_psr_guard(args: argparse.Namespace):
         return
     # Import from PSR-main; assumes repo path is available.
     import sys
-    sys.path.append("/data/xuhaotian/PSR-main")
+    sys.path.append("/path/to/PSR")
     from guard import ConversationSafetyFilter
 
     PSR_GUARD = ConversationSafetyFilter()
@@ -544,7 +544,7 @@ def _apply_psr_guard(prompt: str, answer: str, args: argparse.Namespace) -> str:
 def _load_psr_reflection_predictor(path: str, device: torch.device):
     """Load reflection predictor checkpoint from PSR-main."""
     import sys
-    sys.path.append("/data/xuhaotian/PSR-main")
+    sys.path.append("/path/to/PSR")
     from predictor import ReflectionPredictor
 
     state_dict = torch.load(path, map_location=device)
@@ -560,7 +560,7 @@ def _psr_generate(prompt: str, args: argparse.Namespace) -> str:
     initialized target model handle (32b) from spec_reason.initialize_model_handles.
     """
     import sys
-    sys.path.append("/data/xuhaotian/PSR-main")
+    sys.path.append("/path/to/PSR")
     from src.inference.chat import Chat
 
     # Reuse target model/tokenizer loaded by spec_reason
@@ -605,18 +605,18 @@ def _safe_decode(prompt: str, args: argparse.Namespace) -> str:
         # Determine config based on model name or an argument
         model_key = getattr(args, "model_key", "qwen3")
         if model_key == "qwen3":
-            m_path = "/data/xuhaotian/model/Qwen3-32B"
-            l_path = "/data/xuhaotian/SafeDecoding-main/lora_modules/qwen3"
+            m_path = "Qwen/Qwen3-32B"
+            l_path = "/path/to/SafeDecoding/lora_modules/qwen3"
             t_name = "qwen-7b-chat"
         elif model_key == "deepseek":
-            m_path = "/data/LLM_models/DeepSeek-R1-Distill-Llama-70B"
-            l_path = "/data/xuhaotian/SafeDecoding-main/lora_modules/deepseek"
+            m_path = "deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
+            l_path = "/path/to/SafeDecoding/lora_modules/deepseek"
             t_name = "deepseek-chat"
         elif model_key == "glm47flash":
             raise NotImplementedError("SafeDecoding 尚未为 GLM-4.7-Flash 配置模板/LoRA。")
         else:
-            m_path = "/data/xuhaotian/model/Qwen3-32B"
-            l_path = "/data/xuhaotian/SafeDecoding-main/lora_modules/qwen3"
+            m_path = "Qwen/Qwen3-32B"
+            l_path = "/path/to/SafeDecoding/lora_modules/qwen3"
             t_name = "qwen-7b-chat"
 
         SAFE_DECODER = SafeDecodingWrapper(
@@ -750,7 +750,7 @@ def _validate_model_paths(args: argparse.Namespace) -> None:
             raise FileNotFoundError(f"{label} does not exist: {path}")
 
     if getattr(args, "model_key", None) == "glm47flash":
-        if args.run_mode == "spec_ppl":
+        if args.run_mode == "spec_safe":
             if not os.path.exists(args.safety_head_path):
                 raise FileNotFoundError(
                     "GLM-4.7-Flash 需要单独训练并指定 safety head；当前路径不存在："
@@ -776,8 +776,8 @@ def run_single_prompt(prompt: str, args: argparse.Namespace) -> dict:
             "final_output": answer_local,
             "judge_text": answer_local,
         }
-    elif args.run_mode == "spec_ppl":
-        metadata_list, _ = spec_reason_ppl.run_ppl_spec_reasoning(prompt, options=args.prompt_type, args=args)
+    elif args.run_mode == "spec_safe":
+        metadata_list, _ = spec_reason_safe.run_ppl_spec_reasoning(prompt, options=args.prompt_type, args=args)
     elif args.run_mode == "psr":
         # Inline PSR self-reflection generation
         answer_psr = _psr_generate(prompt, args)
@@ -844,11 +844,11 @@ def run_single_prompt(prompt: str, args: argparse.Namespace) -> dict:
             prev = s
         return "".join(out_parts).strip()
 
-    # NOTE: accepted_steps come from step-wise generation (spec_ppl/speculative).
+    # NOTE: accepted_steps come from step-wise generation (spec_safe/speculative).
     raw_body = _join_steps_smart(accepted_steps)
     
     # Ensure proper tagging if missing. 
-    # For speculative/spec_ppl, the output is a collection of steps (thoughts).
+    # For speculative/spec_safe, the output is a collection of steps (thoughts).
     # We wrap them in <think> tags for consistency.
     if not raw_body.startswith("<think>"):
         full_output_text = f"<think>\n{raw_body}\n</think>"
@@ -1026,14 +1026,14 @@ def main(cli_args: Optional[Sequence[str]] = None) -> None:
     _use_adv = getattr(args, "use_adv_suffix", False)
     _adv = getattr(args, "adv_suffix", None)
     spec_reason.set_adv_suffix(_use_adv, _adv)
-    spec_reason_ppl.set_adv_suffix(_use_adv, _adv)
+    spec_reason_safe.set_adv_suffix(_use_adv, _adv)
     if _use_adv:
         logger.info("Adversarial SUFFIX ENABLED (benign prompts only).")
     spec_reason.initialize_model_handles(args)
-    # Initialize spec_ppl clients/safety if needed
-    if args.run_mode == "spec_ppl":
-        spec_reason_ppl.initialize_clients(args)
-        spec_reason_ppl.initialize_safety(args)
+    # Initialize spec_safe clients/safety if needed
+    if args.run_mode == "spec_safe":
+        spec_reason_safe.initialize_clients(args)
+        spec_reason_safe.initialize_safety(args)
 
     method_files = iter_method_files(jailbreak_dir, args.methods)
     if not method_files:

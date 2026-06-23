@@ -10,8 +10,8 @@ DEFAULT_SYSTEM_PROMPT = ("You are a Qwen3 reasoning model. \n"
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate answers using vLLM.")
     parser.add_argument("--model_path", type=str, required=True, help="Path to the local model.")
-    parser.add_argument("--input_paths", type=str, nargs='+', default=["/data/xuhaotian/Safety_head/prompt/jailbreak_prompt_train"], help="List of input file or directory paths.")
-    parser.add_argument("--output_dir", type=str, default="/data/xuhaotian/Safety_head/data_gen/raw_output", help="Directory to save results.")
+    parser.add_argument("--input_paths", type=str, nargs='+', default=["/path/to/safety_head_ckpts/prompt/jailbreak_prompt_train"], help="List of input file or directory paths.")
+    parser.add_argument("--output_dir", type=str, default="/path/to/safety_head_ckpts/data_gen/raw_output", help="Directory to save results.")
     parser.add_argument("--system_prompt", type=str, default=None, help="System prompt to use.")
     parser.add_argument("--max_tokens", type=int, default=4096, help="Max tokens for generation.")
     parser.add_argument("--num_samples", type=int, default=1, help="Number of samples per prompt.")

@@ -104,10 +104,10 @@ def extract(base_model, loader, input_device, layers: List[int]) -> Tuple[Dict[i
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model_path", default="/data/xuhaotian/model/Qwen3-32B")
-    ap.add_argument("--train_jsonl", default="/data/xuhaotian/Safety_head/mix_data/train_mix_qwen32b.jsonl")
-    ap.add_argument("--ood_jsonl", default="/data/xuhaotian/Safety_head/mix_data/ood_eval_qwen32b.jsonl")
-    ap.add_argument("--out_path", default="/data/xuhaotian/Safety_head/mix_data/features_qwen32b.pt")
+    ap.add_argument("--model_path", default="Qwen/Qwen3-32B")
+    ap.add_argument("--train_jsonl", default="/path/to/safety_head_ckpts/mix_data/train_mix_qwen32b.jsonl")
+    ap.add_argument("--ood_jsonl", default="/path/to/safety_head_ckpts/mix_data/ood_eval_qwen32b.jsonl")
+    ap.add_argument("--out_path", default="/path/to/safety_head_ckpts/mix_data/features_qwen32b.pt")
     ap.add_argument("--extract_layers", default="-1,48,32", help="逗号分隔的 hidden_states 层下标")
     ap.add_argument("--val_ratio", type=float, default=0.08)
     ap.add_argument("--seed", type=int, default=42)

@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-cd /data/xuhaotian/Safety_head
+cd /path/to/safety_head_ckpts
 
 export PYTHONUNBUFFERED=1
 
-PY=/data/xuhaotian/anaconda3/envs/python310/bin/python
+PY=python
 
-DATA_JSONL=/data/xuhaotian/Safety_head/train_data_qwen_4b/train_qwen3_4b_with_benign1k.jsonl
+DATA_JSONL=/path/to/safety_head_ckpts/train_data_qwen_4b/train_qwen3_4b_with_benign1k.jsonl
 
 nohup $PY train.py \
-  --model_path /data/xuhaotian/model/Qwen3-32B \
+  --model_path Qwen/Qwen3-32B \
   --data_dir "$DATA_JSONL" \
   --save_dir safety_head_ckpt_qwen32b_layer8 \
   --hidden_layer_index 8 \
@@ -17,7 +17,7 @@ nohup $PY train.py \
   > nohup_train_layer8.log 2>&1 &
 
 nohup $PY train.py \
-  --model_path /data/xuhaotian/model/Qwen3-32B \
+  --model_path Qwen/Qwen3-32B \
   --data_dir "$DATA_JSONL" \
   --save_dir safety_head_ckpt_qwen32b_layer4 \
   --hidden_layer_index 4 \
@@ -26,7 +26,7 @@ nohup $PY train.py \
   > nohup_train_layer4.log 2>&1 &
 
 # nohup $PY train.py \
-#   --model_path /data/xuhaotian/model/Qwen3-32B \
+#   --model_path Qwen/Qwen3-32B \
 #   --data_dir "$DATA_JSONL" \
 #   --save_dir safety_head_ckpt_qwen32b_layer48 \
 #   --hidden_layer_index 48 \

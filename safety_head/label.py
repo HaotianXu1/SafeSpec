@@ -7,7 +7,7 @@ from tqdm import tqdm
 from transformers import AutoTokenizer
 
 # --- Configuration ---
-DEFAULT_MODEL_PATH = "/data/xuhaotian/model/Qwen3Guard-Gen-8B"
+DEFAULT_MODEL_PATH = "/path/to/models/Qwen3Guard-Gen-8B"
 BATCH_SIZE = 1000
 
 # --- Helper Functions ---

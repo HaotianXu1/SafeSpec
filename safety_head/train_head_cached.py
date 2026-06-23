@@ -52,7 +52,7 @@ def evaluate(head, X, y, thrs, device):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--features", default="/data/xuhaotian/Safety_head/mix_data/features_qwen32b.pt")
+    ap.add_argument("--features", default="/path/to/safety_head_ckpts/mix_data/features_qwen32b.pt")
     ap.add_argument("--layer", type=int, default=-1, help="使用缓存中的哪一层 (须在 extract_layers 内)")
     ap.add_argument("--save_dir", default="safety_head_ckpt_qwen32b_layerlast_mix")
     ap.add_argument("--epochs", type=int, default=40)

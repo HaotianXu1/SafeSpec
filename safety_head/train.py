@@ -510,11 +510,11 @@ def train(args):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train a safety head on top of target model hidden states")
-    parser.add_argument("--model_path", type=str, default="/data/xuhaotian/model/Qwen3-32B", help="目标模型路径（用于抽取 hidden states）")
+    parser.add_argument("--model_path", type=str, default="Qwen/Qwen3-32B", help="目标模型路径（用于抽取 hidden states）")
     parser.add_argument(
         "--data_dir",
         type=str,
-        default="/data/xuhaotian/Safety_head/train_data_qwen_4b",
+        default="/path/to/safety_head_ckpts/train_data_qwen_4b",
         help="标注数据目录（递归读 **/*.jsonl），或单个 .jsonl 文件路径",
     )
     parser.add_argument("--save_dir", type=str, default="safety_head_ckpt", help="安全头保存目录")

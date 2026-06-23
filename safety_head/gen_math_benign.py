@@ -102,9 +102,9 @@ def generate(model_path, inputs: List[Tuple[str, str]], max_tokens, tp, gpu_mem,
 def main():
     _line_buffer()
     ap = argparse.ArgumentParser()
-    ap.add_argument("--math_jsonl", default="/data/xuhaotian/spec-reason-multisample/MATH/test.jsonl")
-    ap.add_argument("--model_path", default="/data/LLM_models/Qwen3-4B")
-    ap.add_argument("--out_dir", default="/data/xuhaotian/Safety_head/mix_data")
+    ap.add_argument("--math_jsonl", default="/path/to/safespec/MATH/test.jsonl")
+    ap.add_argument("--model_path", default="Qwen/Qwen3-4B")
+    ap.add_argument("--out_dir", default="/path/to/safety_head_ckpts/mix_data")
     ap.add_argument("--n_train", type=int, default=250)
     ap.add_argument("--n_ood", type=int, default=80)
     ap.add_argument("--gpus", default="4,5")

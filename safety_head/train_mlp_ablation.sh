@@ -5,14 +5,14 @@
 # 二者除隐层宽度外其它超参相同；各占一对 GPU，可按机器改 GPU / hidden_layer。
 
 set -euo pipefail
-cd /data/xuhaotian/Safety_head
+cd /path/to/safety_head_ckpts
 
 export PYTHONUNBUFFERED=1
 
-PY=/data/xuhaotian/anaconda3/envs/python310/bin/python
+PY=python
 
-DATA_JSONL=/data/xuhaotian/Safety_head/train_data_qwen_4b/train_qwen3_4b_with_benign1k.jsonl
-MODEL_PATH=/data/xuhaotian/model/Qwen3-32B
+DATA_JSONL=/path/to/safety_head_ckpts/train_data_qwen_4b/train_qwen3_4b_with_benign1k.jsonl
+MODEL_PATH=Qwen/Qwen3-32B
 
 # 与 layer ablation 对齐时可改成 4、8、16 等；默认最后一层
 HIDDEN_LAYER_INDEX=-1

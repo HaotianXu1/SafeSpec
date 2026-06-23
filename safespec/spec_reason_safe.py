@@ -18,7 +18,7 @@ from datasets import load_dataset, load_from_disk
 
 # Safety head imports
 import sys
-sys.path.append("/data/xuhaotian/Safety_head")
+sys.path.append("/path/to/safety_head_ckpts")
 from safety_head import load_safety_head, read_safety_head_config, select_hidden_state, pooled_hidden_states
 # 共享同一份对抗性后缀字符串，保证与 spec_reason 一致
 from spec_reason import SUFFIX as DEFAULT_ADV_SUFFIX
@@ -54,9 +54,9 @@ def set_adv_suffix(use, suffix=None):
     if suffix:
         ADV_SUFFIX = suffix
 
-DEFAULT_DRAFT_MODEL_PATH = "/data/xuhaotian/model/Qwen3-1.7B"
-DEFAULT_BASE_MODEL_PATH = "/data/xuhaotian/model/Qwen3-32B"
-DEFAULT_SAFETY_HEAD_PATH = "/data/xuhaotian/Safety_head/safety_head_ckpt_qwen32b_layerlast_mix_aug2/safety_head_best.pt"
+DEFAULT_DRAFT_MODEL_PATH = "Qwen/Qwen3-1.7B"
+DEFAULT_BASE_MODEL_PATH = "Qwen/Qwen3-32B"
+DEFAULT_SAFETY_HEAD_PATH = "/path/to/safety_head_ckpts/safety_head_ckpt_qwen32b_layerlast_mix_aug2/safety_head_best.pt"
 
 model_names = {
     "1.5b": DEFAULT_DRAFT_MODEL_PATH,
@@ -227,7 +227,7 @@ def get_first_user_msg(problem, options=None):
       选项无法作答（此前直接 return problem 会丢选项，导致 GPQA 准确率失真）。
 
     注意：benign 分支不附加任何对抗性 SUFFIX；并与 spec_reason.get_first_user_msg 保持一致，
-    确保 spec_ppl / speculative / target_only / draft_only 各 run_mode 的 benign prompt 完全相同。
+    确保 spec_safe / speculative / target_only / draft_only 各 run_mode 的 benign prompt 完全相同。
     """
     if isinstance(options, str):
         return problem  # jailbreak：原样，不附加后缀
@@ -387,7 +387,7 @@ def get_score(args, problem, steps_so_far, model_size="32b", options=None):
     if safety_head is not None:
         safety_start = time.perf_counter()
         _hist = steps_so_far[-args.safety_history_steps:] if args.safety_history_steps > 0 else [steps_so_far[-1]]
-        # 剔除框架自己插入的 recovery 警告(否则头反复对警告误判 → 级联截停,实测 gpqa spec_ppl 主因)
+        # 剔除框架自己插入的 recovery 警告(否则头反复对警告误判 → 级联截停,实测 gpqa spec_safe 主因)
         safety_steps = [s for s in _hist if s.strip() != WARNING_MSG_STRIPPED] or [steps_so_far[-1]]
         safety_text = "\n\n".join(safety_steps) if safety_steps else steps_so_far[-1]
         if safety_backend == "vllm":
@@ -469,7 +469,7 @@ def get_dataset(dataset_name):
     elif dataset_name == "math":
         dataset = load_dataset("HuggingFaceH4/MATH-500")["test"]
     elif dataset_name == "gpqa":
-        local_gpqa_path = "/data/xuhaotian/specreason-origin/gpqa/gpqa_diamond.csv"
+        local_gpqa_path = "/path/to/safespec/gpqa/gpqa_diamond.csv"
         if os.path.exists(local_gpqa_path):
             dataset = load_dataset("csv", data_files=local_gpqa_path)["train"]
         elif os.getenv("HF_HUB_OFFLINE", "0") == "1":
@@ -477,13 +477,13 @@ def get_dataset(dataset_name):
         else:    
             dataset = load_dataset("Idavidrein/gpqa", "gpqa_diamond")["train"]
     elif dataset_name == "gsm8k":
-        local_gsm8k_path = "/data/xuhaotian/specreason-origin/GSM8K"
+        local_gsm8k_path = "/path/to/safespec/GSM8K"
         if os.path.exists(local_gsm8k_path):
             dataset = load_dataset("parquet", data_files={"test": f"{local_gsm8k_path}/test-00000-of-00001.parquet"})["test"]
         else:
             dataset = load_dataset("gsm8k", "main")["test"]
     elif dataset_name == "hellaswag":
-        local_hellaswag_path = "/data/xuhaotian/specreason-origin/hellaswag/data"
+        local_hellaswag_path = "/path/to/safespec/hellaswag/data"
         if os.path.exists(local_hellaswag_path):
             dataset = load_dataset("parquet", data_files={"validation": f"{local_hellaswag_path}/validation-00000-of-00001.parquet"})["validation"]
         else:
@@ -544,11 +544,11 @@ def build_parser():
     parser.add_argument("--num_repeats", type=int, default=1, help="Number of repeats per problem")
     parser.add_argument("--score_method", type=str, choices=["greedy", "average"], default="greedy",
                         help="Scoring method")
-    parser.add_argument("--output_dir", type=str, default="/data/xuhaotian/specreason-origin/results/saftyspec", 
+    parser.add_argument("--output_dir", type=str, default="/path/to/safespec/results/saftyspec", 
                         help="Where result pickle files will be written to")
     parser.add_argument("--first_n_steps_base_model", type=int, default=0, 
                         help="First n steps use base model only")
-    parser.add_argument("--run_mode", type=str, choices=["speculative","spec_ppl", "target_only", "draft_only"], default="speculative",
+    parser.add_argument("--run_mode", type=str, choices=["speculative","spec_safe", "target_only", "draft_only"], default="speculative",
                         help="Run mode: speculative, target_only, or draft_only")
     parser.add_argument("--base_port", type=str, default="30000", help="Port for base model")
     parser.add_argument("--draft_port", type=str, default="30001", help="Port for draft model")
@@ -558,7 +558,7 @@ def build_parser():
                         help="Draft/small model path served by vLLM")
     parser.add_argument("--safety_head_path", type=str, default=DEFAULT_SAFETY_HEAD_PATH,
                         help="Path to safety head checkpoint")
-    parser.add_argument("--safety_model_path", type=str, default="/data/xuhaotian/model/Qwen3-32B",
+    parser.add_argument("--safety_model_path", type=str, default="Qwen/Qwen3-32B",
                         help="Backbone model path for safety head")
     parser.add_argument("--safety_threshold", type=float, default=0.5, help="Safety score threshold (>= unsafe)")
     parser.add_argument("--safety_max_length", type=int, default=2048, help="Max length for safety tokenizer")
@@ -1039,7 +1039,7 @@ def main():
             generation_start_time = time.perf_counter()
             
             if args.run_mode in ["target_only", "draft_only"]:
-                logging.error("Single model modes are not fully implemented in this refactored spec_reason_ppl.py. Use spec_reason.py for draft/target_only.")
+                logging.error("Single model modes are not fully implemented in this refactored spec_reason_safe.py. Use spec_reason.py for draft/target_only.")
                 continue
             else:
                 metadata_list, _ = run_ppl_spec_reasoning(problem, options, args)

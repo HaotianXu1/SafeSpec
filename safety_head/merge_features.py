@@ -9,7 +9,7 @@ import torch
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out_path", default="/data/xuhaotian/Safety_head/mix_data/features_qwen32b.pt")
+    ap.add_argument("--out_path", default="/path/to/safety_head_ckpts/mix_data/features_qwen32b.pt")
     ap.add_argument("--num_shards", type=int, default=4)
     args = ap.parse_args()
 

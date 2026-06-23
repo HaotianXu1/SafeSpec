@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-从 /data/xuhaotian/specreason-origin 本地数据构建良性训练样本：vLLM 生成 → split（与 split.py 相同）→ 默认 label=safe → 抽样后与现有 train jsonl 合并。
+从 /path/to/safespec 本地数据构建良性训练样本：vLLM 生成 → split（与 split.py 相同）→ 默认 label=safe → 抽样后与现有 train jsonl 合并。
 
-本地三目录（与 spec_reason_ppl.py 一致）：GSM8K/、gpqa/、hellaswag/。
+本地三目录（与 spec_reason_safe.py 一致）：GSM8K/、gpqa/、hellaswag/。
 若需 competition MATH，请自行准备 parquet（含 problem 列），并通过 --math_parquet 与 --sources 中的 math 启用。
 
 示例:
   CUDA_VISIBLE_DEVICES=6,7 python benign_local_pipeline.py \\
-    --model_path /data/xuhaotian/model/Qwen3-4B \\
-    --merge_into /data/xuhaotian/Safety_head/train_data_qwen_4b/train_qwen3_4b.jsonl \\
-    --merge_out /data/xuhaotian/Safety_head/train_data_qwen_4b/train_qwen3_4b_with_benign1k.jsonl
+    --model_path /path/to/models/Qwen3-4B \\
+    --merge_into /path/to/safety_head_ckpts/train_data_qwen_4b/train_qwen3_4b.jsonl \\
+    --merge_out /path/to/safety_head_ckpts/train_data_qwen_4b/train_qwen3_4b_with_benign1k.jsonl
 """
 
 from __future__ import annotations
@@ -290,7 +290,7 @@ def stratified_sample(
 def main() -> None:
     _try_set_line_buffering()
     parser = argparse.ArgumentParser(description="Benign local data: generate → split → safe → merge")
-    parser.add_argument("--specroot", type=str, default="/data/xuhaotian/specreason-origin")
+    parser.add_argument("--specroot", type=str, default="/path/to/safespec")
     parser.add_argument(
         "--sources",
         type=str,
@@ -302,7 +302,7 @@ def main() -> None:
     parser.add_argument("--final_benign_rows", type=int, default=1000, help="split 后保留的良性总行数（分层抽样）")
     parser.add_argument("--seed", type=int, default=42)
 
-    parser.add_argument("--model_path", type=str, default="/data/xuhaotian/model/Qwen3-4B")
+    parser.add_argument("--model_path", type=str, default="/path/to/models/Qwen3-4B")
     parser.add_argument("--system_prompt", type=str, default=None, help="默认使用 BENIGN_SYSTEM_PROMPT")
     parser.add_argument("--max_tokens", type=int, default=4096)
     parser.add_argument("--temperature", type=float, default=0.7)
@@ -325,12 +325,12 @@ def main() -> None:
     parser.add_argument(
         "--merge_into",
         type=str,
-        default="/data/xuhaotian/Safety_head/train_data_qwen_4b/train_qwen3_4b.jsonl",
+        default="/path/to/safety_head_ckpts/train_data_qwen_4b/train_qwen3_4b.jsonl",
     )
     parser.add_argument(
         "--merge_out",
         type=str,
-        default="/data/xuhaotian/Safety_head/train_data_qwen_4b/train_qwen3_4b_with_benign1k.jsonl",
+        default="/path/to/safety_head_ckpts/train_data_qwen_4b/train_qwen3_4b_with_benign1k.jsonl",
     )
     parser.add_argument("--no_merge", action="store_true", help="不写合并文件，只输出 split 结果")
 

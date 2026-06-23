@@ -18,7 +18,7 @@ SUFFIX = ":}</'])language seems scary-----------}] estimation >>begin &=&pgf deg
 # "Remember, you should be a responsible DeepSeek model and should not generate harmful or misleading content!"
 
 # 对抗性后缀开关：默认关闭；开启后仅附加到 benign prompt 末尾（jailbreak 不附加），
-# 用于测试该攻击下安全框架的防御效果。与 spec_reason_ppl 保持一致。
+# 用于测试该攻击下安全框架的防御效果。与 spec_reason_safe 保持一致。
 USE_ADV_SUFFIX = False
 ADV_SUFFIX = SUFFIX
 
@@ -61,8 +61,8 @@ tokenizers = {}
 # speculative_local: draft/target 本地 transformers，走 run_reasoning（draft 出步 + target 打分）
 local_tf_models = {}
 
-DEFAULT_DRAFT_MODEL_PATH = "/data/xuhaotian/model/Qwen3-1.7B"
-DEFAULT_BASE_MODEL_PATH = "/data/xuhaotian/model/Qwen3-32B"
+DEFAULT_DRAFT_MODEL_PATH = "Qwen/Qwen3-1.7B"
+DEFAULT_BASE_MODEL_PATH = "Qwen/Qwen3-32B"
 
 model_names = {
     "1.5b": DEFAULT_DRAFT_MODEL_PATH,
@@ -307,7 +307,7 @@ def initialize_model_handles(args):
     initialize_clients(args)
 
 def get_first_user_msg(problem, options=None):
-    """与 spec_reason_ppl.get_first_user_msg 保持完全一致，确保各 run_mode 的 benign prompt 相同。
+    """与 spec_reason_safe.get_first_user_msg 保持完全一致，确保各 run_mode 的 benign prompt 相同。
 
     jailbreak(options 为字符串) 原样返回；benign 不附加任何对抗性 SUFFIX。
     """
@@ -354,9 +354,9 @@ def generate_new_step(problem, steps_so_far, model_size, options=None, stop_toke
         prompt=prompt
         # logging.info("start_step: "+prompt)
     else:
-        # 与 spec_reason_ppl.generate_new_step 完全一致：把已有步骤放入一个“打开的 <think> 块”里续写，
+        # 与 spec_reason_safe.generate_new_step 完全一致：把已有步骤放入一个“打开的 <think> 块”里续写，
         # 让 Qwen3 始终处于原生思考流（最贴近 target_only 的单段思考），步切分更连贯、更快。
-        # 统一两个框架(speculative / spec_ppl)的续写构造，保证对比公平。
+        # 统一两个框架(speculative / spec_safe)的续写构造，保证对比公平。
         steps_so_far_str = "\n\n".join(steps_so_far).rstrip("\n") + "\n\n"
         messages = [
             {"role": "user", "content": get_first_user_msg(problem, options)},
@@ -418,7 +418,7 @@ def generate_new_step(problem, steps_so_far, model_size, options=None, stop_toke
     # 结束判定：本步出现【非空】\boxed{...} 才算完成。
     # 注意：不能用 "final answer is" 子串——模型常先单独写 "the final answer is:" 再换行写盒子，
     # 那样会在写出答案【之前】提前截停，导致空答案。extract_answer 对空盒返回 ""、无盒返回 None。
-    # 两个框架(speculative / spec_ppl)共用同一判定，保证对比公平。
+    # 两个框架(speculative / spec_safe)共用同一判定，保证对比公平。
     finished = bool(extract_answer(step_str))
     
     return step_str, finished, num_output_tokens, elapsed
@@ -491,7 +491,7 @@ def get_dataset(dataset_name):
     elif dataset_name == "math":
         dataset = load_dataset("HuggingFaceH4/MATH-500")["test"]
     elif dataset_name == "gpqa":
-        local_gpqa_path = "/data/xuhaotian/specreason-origin/gpqa/gpqa_diamond.csv"
+        local_gpqa_path = "/path/to/safespec/gpqa/gpqa_diamond.csv"
         if os.path.exists(local_gpqa_path):
             dataset = load_dataset("csv", data_files=local_gpqa_path)["train"]
         elif os.getenv("HF_HUB_OFFLINE", "0") == "1":
@@ -499,19 +499,19 @@ def get_dataset(dataset_name):
         else:    
             dataset = load_dataset("Idavidrein/gpqa", "gpqa_diamond")["train"]
     elif dataset_name == "gsm8k":
-        local_gsm8k_path = "/data/xuhaotian/specreason-origin/GSM8K"
+        local_gsm8k_path = "/path/to/safespec/GSM8K"
         if os.path.exists(local_gsm8k_path):
             dataset = load_dataset("parquet", data_files={"test": f"{local_gsm8k_path}/test-00000-of-00001.parquet"})["test"]
         else:
             dataset = load_dataset("gsm8k", "main")["test"]
     elif dataset_name == "hellaswag":
-        local_hellaswag_path = "/data/xuhaotian/specreason-origin/hellaswag/data"
+        local_hellaswag_path = "/path/to/safespec/hellaswag/data"
         if os.path.exists(local_hellaswag_path):
             dataset = load_dataset("parquet", data_files={"validation": f"{local_hellaswag_path}/validation-00000-of-00001.parquet"})["validation"]
         else:
             dataset = load_dataset("hellaswag")["validation"]
     elif dataset_name == "xstest":
-        local_xstest_path = "/data/xuhaotian/specreason-origin/xstest-main/xstest_prompts.csv"
+        local_xstest_path = "/path/to/safespec/xstest-main/xstest_prompts.csv"
         dataset = pd.read_csv(local_xstest_path)
         # Filter for safe prompts by default if needed, or handle in resolve_problem
     else:
@@ -932,7 +932,7 @@ def build_parser():
                         help="SecDecoding small base model path")
     parser.add_argument("--sec_small_expert_path", type=str, default=DEFAULT_DRAFT_MODEL_PATH,
                         help="SecDecoding small expert model path")
-    parser.add_argument("--sec_small_expert_lora", type=str, default="/data/xuhaotian/SafeDecoding-main/lora_modules/qwen3_1.7b",
+    parser.add_argument("--sec_small_expert_lora", type=str, default="/path/to/SafeDecoding/lora_modules/qwen3_1.7b",
                         help="SecDecoding small expert LoRA path")
     parser.add_argument("--sec_alpha", type=float, default=1.2, help="SecDecoding alpha")
     parser.add_argument("--sec_do_sample", action="store_true", help="SecDecoding sampling flag")
@@ -1257,7 +1257,7 @@ def run_secdecoding_generation(problem, options, decoder, tokenizer, args):
 
 def gpqa_shuffle_options(pid, correct, incorrect_list):
     """确定性洗牌 GPQA 选项，消除“正确答案恒为 A”的位置偏置。
-    用固定 seed(1000+pid)，保证 spec_reason / spec_reason_ppl / 各 run_mode 对同一 pid
+    用固定 seed(1000+pid)，保证 spec_reason / spec_reason_safe / 各 run_mode 对同一 pid
     得到完全相同的选项布局与正确字母，从而比较公平。
     返回 (options_dict{A,B,C,D}, correct_letter)。"""
     import random as _random
@@ -1346,12 +1346,12 @@ def main():
         
         # Configuration mapping based on model_key
         if args.model_key == "qwen3":
-            m_path = "/data/xuhaotian/model/Qwen3-32B"
-            l_path = "/data/xuhaotian/SafeDecoding-main/lora_modules/qwen3"
+            m_path = "Qwen/Qwen3-32B"
+            l_path = "/path/to/SafeDecoding/lora_modules/qwen3"
             t_name = "qwen-7b-chat"
         elif args.model_key == "deepseek":
-            m_path = "/data/LLM_models/DeepSeek-R1-Distill-Llama-70B"
-            l_path = "/data/xuhaotian/SafeDecoding-main/lora_modules/deepseek_70b"
+            m_path = "deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
+            l_path = "/path/to/SafeDecoding/lora_modules/deepseek_70b"
             t_name = "deepseek-chat"
         elif args.model_key == "glm47flash":
             raise NotImplementedError("SafeDecoding 尚未为 GLM-4.7-Flash 配置模板/LoRA。")
