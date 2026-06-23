@@ -118,7 +118,7 @@ SafeSpec/
 
 ## 🙏 Acknowledgements
 
-The optional SafeDecoding baseline is not included; it requires the upstream [SafeDecoding](https://github.com/uw-nsl/SafeDecoding) repo.
+SafeSpec is built on top of **[SpecReason](https://github.com/ruipeterpan/specreason)** (Pan et al., NeurIPS 2025), whose step-level speculative reasoning framework we extend with safety-aware verification. We thank the authors for open-sourcing their code.
 
 ## 📄 License
 
