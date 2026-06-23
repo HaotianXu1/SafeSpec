@@ -1,0 +1,16 @@
+# SafeSpec dependencies
+# Tested with: vllm 0.13.0, torch 2.9.0 (cu128), transformers 4.57.1, Python 3.10
+
+# --- core: models & speculative reasoning ---
+torch>=2.4
+transformers>=4.45
+vllm>=0.6.0
+
+# --- data & utilities ---
+datasets>=2.18
+pandas>=2.0
+numpy>=1.24
+tqdm>=4.66
+
+# --- OpenAI-compatible client for talking to local vLLM servers ---
+openai>=1.40

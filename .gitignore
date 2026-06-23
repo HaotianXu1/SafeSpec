@@ -1,0 +1,41 @@
+# ===== 结果数据 / 日志 (绝不上传) =====
+results/
+run_logs/
+logs/
+history/
+*.log
+
+# ===== 训练数据 / 特征 / 中间产物 =====
+mix_data/
+mix_data_*/
+output_split/
+output_labeled/
+ood_data/
+data_gen/
+train_data*/
+train_qwen*/
+*.jsonl
+*.parquet
+features_*.pt
+
+# ===== 模型权重 / checkpoint (放 Hugging Face, 不放 git) =====
+*.pt
+*.pth
+*.safetensors
+*.bin
+safety_head_ckpt*/
+
+# ===== 数据集 (用脚本/官方源下载) =====
+hellaswag/
+gpqa/
+GSM8K/
+xstest-main/
+*.csv
+
+# ===== Python / 缓存 / 密钥 =====
+__pycache__/
+*.pyc
+.cache/
+.env
+*.key
+secrets*
